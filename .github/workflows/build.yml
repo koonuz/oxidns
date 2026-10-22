@@ -1,0 +1,26 @@
+   name: Build for MT7621 (mipsel)
+
+   on:
+     workflow_dispatch: # 允许手动触发
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Build oxidns for mipsel
+           run: |
+             # 使用 rust-musl-cross 镜像进行交叉编译
+             # 设置 RUSTFLAGS 以针对 MT7621 的 MIPS32r2 架构进行性能优化
+             docker run --rm -v "$(pwd)":/home/rust/src \
+               -e RUSTFLAGS="-C target-cpu=mips32r2" \
+               messense/rust-musl-cross:mipsel-musl \
+               cargo build --release
+
+         - name: Upload binary
+           uses: actions/upload-artifact@v4
+           with:
+             name: oxidns-mipsel-unknown-linux-musl
+             path: target/mipsel-unknown-linux-musl/release/oxidns
